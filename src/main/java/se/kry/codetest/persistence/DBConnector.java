@@ -1,4 +1,4 @@
-package se.kry.codetest;
+package se.kry.codetest.persistence;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
