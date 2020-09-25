@@ -1,7 +1,9 @@
 package se.kry.codetest;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
@@ -33,6 +35,22 @@ public class TestMainVerticle {
           assertEquals(200, response.result().statusCode());
           JsonArray body = response.result().bodyAsJsonArray();
           assertEquals(1, body.size());
+          testContext.completeNow();
+        }));
+  }
+
+  @Test
+  @DisplayName("Save a new service")
+  void save_service_entry(Vertx vertx, VertxTestContext testContext) {
+    JsonObject newServiceJsonObject = new JsonObject();
+
+    newServiceJsonObject.put("url", "http://www.google.com");
+
+    WebClient.create(vertx)
+        .post(8080, "::1", "/service")
+        .sendJsonObject(newServiceJsonObject, response -> testContext.verify(() -> {
+          assertEquals(HttpResponseStatus.OK.code(), response.result().statusCode());
+
           testContext.completeNow();
         }));
   }

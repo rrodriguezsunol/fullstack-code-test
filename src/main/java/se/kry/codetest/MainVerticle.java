@@ -64,10 +64,15 @@ public class MainVerticle extends AbstractVerticle {
 
     router.post("/service").handler(req -> {
       JsonObject jsonBody = req.getBodyAsJson();
+
       services.put(jsonBody.getString("url"), "UNKNOWN");
+
       req.response()
           .putHeader("content-type", "text/plain")
           .end("OK");
+    }).failureHandler(routingContext -> {
+      System.out.println("Server Error: " + routingContext.failure());
+      routingContext.response().setStatusCode(500).end();
     });
   }
 
