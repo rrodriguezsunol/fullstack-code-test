@@ -12,9 +12,12 @@ import se.kry.codetest.persistence.DBConnector;
 import se.kry.codetest.persistence.ServiceRepository;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class MainVerticle extends AbstractVerticle {
+  private static final Logger LOGGER = Logger.getLogger(MainVerticle.class.getName());
 
   private ServiceRepository serviceRepository;
 
@@ -40,7 +43,7 @@ public class MainVerticle extends AbstractVerticle {
         .requestHandler(router)
         .listen(8080, result -> {
           if (result.succeeded()) {
-            System.out.println("KRY code test service started");
+            LOGGER.info("KRY code test service started");
             startFuture.complete();
           } else {
             startFuture.fail(result.cause());
@@ -68,7 +71,7 @@ public class MainVerticle extends AbstractVerticle {
           .putHeader("content-type", "text/plain")
           .end("OK");
     }).failureHandler(routingContext -> {
-      System.out.println("Server Error: " + routingContext.failure());
+      LOGGER.log(Level.SEVERE, "Unexpected error:", routingContext.failure());
       routingContext.response().setStatusCode(500).end();
     });
   }
