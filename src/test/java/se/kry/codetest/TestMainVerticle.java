@@ -35,6 +35,12 @@ public class TestMainVerticle {
           assertEquals(200, response.result().statusCode());
           JsonArray body = response.result().bodyAsJsonArray();
           assertEquals(1, body.size());
+
+          JsonObject firstService = body.getJsonObject(0);
+
+          assertEquals("https://www.kry.se", firstService.getString("name"));
+          assertEquals("UNKNOWN", firstService.getString("status"));
+
           testContext.completeNow();
         }));
   }
@@ -50,6 +56,21 @@ public class TestMainVerticle {
         .post(8080, "::1", "/service")
         .sendJsonObject(newServiceJsonObject, response -> testContext.verify(() -> {
           assertEquals(HttpResponseStatus.OK.code(), response.result().statusCode());
+
+          testContext.completeNow();
+        }));
+
+    WebClient.create(vertx)
+        .get(8080, "::1", "/service")
+        .send(response -> testContext.verify(() -> {
+          assertEquals(200, response.result().statusCode());
+          JsonArray body = response.result().bodyAsJsonArray();
+          assertEquals(2, body.size());
+
+          JsonObject firstService = body.getJsonObject(1);
+
+          assertEquals("https://www.google.com", firstService.getString("name"));
+          assertEquals("UNKNOWN", firstService.getString("status"));
 
           testContext.completeNow();
         }));
