@@ -18,10 +18,12 @@ public final class GetServiceHandler implements Handler<RoutingContext> {
 
   @Override
   public void handle(RoutingContext routingContext) {
-    List<JsonObject> jsonServices = serviceRepository.findAll().stream().map(JsonObject::mapFrom).collect(Collectors.toList());
+    serviceRepository.findAll().setHandler(asyncResult -> {
+      List<JsonObject> jsonServices = asyncResult.result().stream().map(JsonObject::mapFrom).collect(Collectors.toList());
 
-    routingContext.response()
-        .putHeader("content-type", "application/json")
-        .end(new JsonArray(jsonServices).encode());
+      routingContext.response()
+          .putHeader("content-type", "application/json")
+          .end(new JsonArray(jsonServices).encode());
+    });
   }
 }

@@ -1,5 +1,6 @@
 package se.kry.codetest.handler;
 
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -17,10 +18,10 @@ public final class CreateServiceHandler implements Handler<RoutingContext> {
   public void handle(RoutingContext routingContext) {
     JsonObject jsonBody = routingContext.getBodyAsJson();
 
-    serviceRepository.save(new Service(jsonBody.getString("url"), "UNKNOWN"));
+    Future<Service> serviceFuture = serviceRepository.save(new Service(jsonBody.getString("url"), "UNKNOWN"));
 
-    routingContext.response()
+    serviceFuture.setHandler(asyncResult -> routingContext.response()
         .putHeader("content-type", "text/plain")
-        .end("OK");
+        .end("OK"));
   }
 }

@@ -8,10 +8,12 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import se.kry.codetest.persistence.DBConnector;
 
 import java.util.concurrent.TimeUnit;
 
@@ -23,6 +25,21 @@ public class TestMainVerticle {
   @BeforeEach
   void deploy_verticle(Vertx vertx, VertxTestContext testContext) {
     vertx.deployVerticle(new MainVerticle(), testContext.succeeding(id -> testContext.completeNow()));
+  }
+
+  @BeforeEach
+  void insert_kry_service(Vertx vertx, VertxTestContext testContext) {
+    DBConnector dbConnector = new DBConnector(vertx);
+
+    dbConnector.query("INSERT INTO service VALUES ('https://www.kry.se', 'UNKNOWN')")
+        .setHandler(testContext.completing());
+  }
+
+  @AfterEach
+  void delete_all_services(Vertx vertx, VertxTestContext testContext) {
+    DBConnector dbConnector = new DBConnector(vertx);
+
+    dbConnector.query("DELETE FROM service").setHandler(testContext.completing());
   }
 
   @Test
@@ -74,5 +91,4 @@ public class TestMainVerticle {
               }));
         });
   }
-
 }

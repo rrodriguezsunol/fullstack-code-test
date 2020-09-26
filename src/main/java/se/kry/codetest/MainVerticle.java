@@ -5,7 +5,6 @@ import io.vertx.core.Future;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
-import se.kry.codetest.core.Service;
 import se.kry.codetest.handler.CreateServiceHandler;
 import se.kry.codetest.handler.GetServiceHandler;
 import se.kry.codetest.persistence.DBConnector;
@@ -30,9 +29,9 @@ public class MainVerticle extends AbstractVerticle {
     Router router = Router.router(vertx);
     router.route().handler(BodyHandler.create());
 
-    serviceRepository.save(new Service("https://www.kry.se", "UNKNOWN"));
-
-    vertx.setPeriodic(1000 * 60, timerId -> poller.pollServices(serviceRepository.findAll()));
+    vertx.setPeriodic(
+        1000 * 60,
+        timerId -> serviceRepository.findAll().setHandler(asyncResult -> poller.pollServices(asyncResult.result())));
 
     setRoutes(router);
 
