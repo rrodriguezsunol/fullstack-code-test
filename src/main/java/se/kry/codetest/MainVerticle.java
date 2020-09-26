@@ -2,19 +2,17 @@ package se.kry.codetest;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import se.kry.codetest.core.Service;
+import se.kry.codetest.handler.CreateServiceHandler;
+import se.kry.codetest.handler.GetServiceHandler;
 import se.kry.codetest.persistence.DBConnector;
 import se.kry.codetest.persistence.ServiceRepository;
 
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 public class MainVerticle extends AbstractVerticle {
   private static final Logger LOGGER = Logger.getLogger(MainVerticle.class.getName());
@@ -54,24 +52,11 @@ public class MainVerticle extends AbstractVerticle {
   private void setRoutes(Router router) {
     router.route("/*").handler(StaticHandler.create());
 
-    router.get("/service").handler(req -> {
-      List<JsonObject> jsonServices = serviceRepository.findAll().stream().map(JsonObject::mapFrom).collect(Collectors.toList());
+    router.get("/service").handler(new GetServiceHandler(serviceRepository));
 
-      req.response()
-          .putHeader("content-type", "application/json")
-          .end(new JsonArray(jsonServices).encode());
-    });
-
-    router.post("/service").handler(req -> {
-      JsonObject jsonBody = req.getBodyAsJson();
-
-      serviceRepository.save(new Service(jsonBody.getString("url"), "UNKNOWN"));
-
-      req.response()
-          .putHeader("content-type", "text/plain")
-          .end("OK");
-    }).failureHandler(routingContext -> {
-      LOGGER.log(Level.SEVERE, "Unexpected error:", routingContext.failure());
+    router.post("/service").handler(new CreateServiceHandler(serviceRepository))
+        .failureHandler(routingContext -> {
+      LOGGER.log(Level.SEVERE, "Unexpected internal error:", routingContext.failure());
       routingContext.response().setStatusCode(500).end();
     });
   }
