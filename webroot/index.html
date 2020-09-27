@@ -4,12 +4,34 @@
     <meta charset="UTF-8">
     <title>Welcome to KRY</title>
 </head>
+
 <body>
-KRY status poller
-<ul id="service-list">
-</ul>
-<input type="text" id="url-name">
-<button id="post-service">Save</button>
+
+<h1>KRY status poller</h1>
+
+<section>
+    Services and their statuses:
+
+    <ul id="service-list">
+    </ul>
+</section>
+
+<section>
+    <p>Register a new service:</p>
+
+    <div>
+        <label for="service-name">Name:</label>
+        <input type="text" id="service-name">
+    </div>
+    <div>
+        <label for="service-url">URL:</label>
+        <input type="text" id="service-url">
+    </div>
+
+    <div>
+        <button id="post-service">Save</button>
+    </div>
+</section>
 
 </body>
 <script src="static/code.js">

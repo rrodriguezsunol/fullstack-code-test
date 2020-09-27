@@ -31,7 +31,7 @@ public class TestMainVerticle {
   void insert_kry_service(Vertx vertx, VertxTestContext testContext) {
     DBConnector dbConnector = new DBConnector(vertx);
 
-    dbConnector.query("INSERT INTO service VALUES ('https://www.kry.se', 'UNKNOWN')")
+    dbConnector.query("INSERT INTO service VALUES ('kry-service', 'https://www.kry.se', 'UNKNOWN')")
         .setHandler(testContext.completing());
   }
 
@@ -55,7 +55,8 @@ public class TestMainVerticle {
 
           JsonObject firstService = body.getJsonObject(0);
 
-          assertEquals("https://www.kry.se", firstService.getString("name"));
+          assertEquals("kry-service", firstService.getString("name"));
+          assertEquals("https://www.kry.se", firstService.getString("url"));
           assertEquals("UNKNOWN", firstService.getString("status"));
 
           testContext.completeNow();
@@ -65,30 +66,33 @@ public class TestMainVerticle {
   @Test
   @DisplayName("Save a new service")
   void save_service_entry(Vertx vertx, VertxTestContext testContext) {
-    JsonObject newServiceJsonObject = new JsonObject().put("url", "https://www.google.com");
+    JsonObject newServiceJsonObject = new JsonObject().put("name", "google-maps").put("url", "https://maps.google.com");
 
     WebClient webClient = WebClient.create(vertx);
 
     webClient
         .post(8080, "::1", "/service")
         .sendJsonObject(newServiceJsonObject, asyncResult -> {
-          testContext.verify(() -> assertEquals(HttpResponseStatus.OK.code(), asyncResult.result().statusCode()));
+          testContext.verify(() -> {
+            assertEquals(HttpResponseStatus.OK.code(), asyncResult.result().statusCode());
 
-          webClient
-              .get(8080, "::1", "/service")
-              .send(response -> testContext.verify(() -> {
-                assertEquals(HttpResponseStatus.OK.code(), response.result().statusCode());
-                JsonArray body = response.result().bodyAsJsonArray();
+            webClient
+                .get(8080, "::1", "/service")
+                .send(response -> testContext.verify(() -> {
+                  assertEquals(HttpResponseStatus.OK.code(), response.result().statusCode());
+                  JsonArray body = response.result().bodyAsJsonArray();
 
-                assertEquals(2, body.size());
+                  assertEquals(2, body.size());
 
-                JsonObject secondService = body.getJsonObject(1);
+                  JsonObject secondService = body.getJsonObject(1);
 
-                assertEquals("https://www.google.com", secondService.getString("name"));
-                assertEquals("UNKNOWN", secondService.getString("status"));
+                  assertEquals("google-maps", secondService.getString("name"));
+                  assertEquals("https://maps.google.com", secondService.getString("url"));
+                  assertEquals("UNKNOWN", secondService.getString("status"));
 
-                testContext.completeNow();
-              }));
+                  testContext.completeNow();
+                }));
+          });
         });
   }
 }

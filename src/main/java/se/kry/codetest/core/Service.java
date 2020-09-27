@@ -4,15 +4,21 @@ import java.util.Objects;
 
 public final class Service {
   private String name;
+  private String url;
   private String status;
 
-  public Service(String name, String status) {
+  public Service(String name, String url, String status) {
     this.name = name;
+    this.url = url;
     this.status = status;
   }
 
   public String getName() {
     return name;
+  }
+
+  public String getUrl() {
+    return url;
   }
 
   public String getStatus() {
@@ -24,20 +30,13 @@ public final class Service {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Service service = (Service) o;
-    return Objects.equals(name, service.name) &&
-        Objects.equals(status, service.status);
+    return name.equals(service.name) &&
+        url.equals(service.url) &&
+        status.equals(service.status);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, status);
-  }
-
-  @Override
-  public String toString() {
-    return "Service{" +
-        "url='" + name + '\'' +
-        ", status='" + status + '\'' +
-        '}';
+    return Objects.hash(name, url, status);
   }
 }

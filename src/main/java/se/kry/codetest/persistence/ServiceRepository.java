@@ -20,7 +20,7 @@ public final class ServiceRepository {
       Collection<Service> retrievedServices = new ArrayList<>(resultSet.getNumRows());
 
       for (JsonObject row : resultSet.getRows()) {
-        retrievedServices.add(new Service(row.getString("url"), row.getString("status")));
+        retrievedServices.add(new Service(row.getString("name"), row.getString("url"), row.getString("status")));
       }
 
       return retrievedServices;
@@ -29,8 +29,8 @@ public final class ServiceRepository {
 
   public Future<Service> save(Service newService) {
     return connector.query(
-        "INSERT INTO SERVICE VALUES (?, ?)",
-        new JsonArray().add(newService.getName()).add(newService.getStatus()))
+        "INSERT INTO SERVICE VALUES (?, ?, ?)",
+        new JsonArray().add(newService.getName()).add(newService.getUrl()).add(newService.getStatus()))
         .map(newService);
   }
 }
