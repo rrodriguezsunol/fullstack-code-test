@@ -5,8 +5,11 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import se.kry.codetest.core.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+
+import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
 public final class ServiceRepository {
   private final DBConnector connector;
@@ -20,7 +23,11 @@ public final class ServiceRepository {
       Collection<Service> retrievedServices = new ArrayList<>(resultSet.getNumRows());
 
       for (JsonObject row : resultSet.getRows()) {
-        retrievedServices.add(new Service(row.getString("name"), row.getString("url"), row.getString("status")));
+        retrievedServices.add(new Service(
+            row.getString("name"),
+            row.getString("url"),
+            row.getString("status"),
+            LocalDateTime.parse(row.getString("created_at"))));
       }
 
       return retrievedServices;
@@ -29,8 +36,12 @@ public final class ServiceRepository {
 
   public Future<Service> save(Service newService) {
     return connector.query(
-        "INSERT INTO SERVICE VALUES (?, ?, ?)",
-        new JsonArray().add(newService.getName()).add(newService.getUrl()).add(newService.getStatus()))
+        "INSERT INTO SERVICE VALUES (?, ?, ?, ?)",
+        new JsonArray()
+            .add(newService.getName())
+            .add(newService.getUrl())
+            .add(newService.getCreatedAt().format(ISO_DATE_TIME))
+            .add(newService.getStatus()))
         .map(newService);
   }
 }

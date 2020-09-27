@@ -4,8 +4,10 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import se.kry.codetest.core.Service;
 import se.kry.codetest.persistence.ServiceRepository;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,7 +25,7 @@ public final class GetServiceHandler implements Handler<RoutingContext> {
   @Override
   public void handle(RoutingContext routingContext) {
     serviceRepository.findAll().setHandler(asyncResult -> {
-      List<JsonObject> jsonServices = asyncResult.result().stream().map(JsonObject::mapFrom).collect(Collectors.toList());
+      List<JsonObject> jsonServices = asyncResult.result().stream().map(this::toJsonObject).collect(Collectors.toList());
 
       if (asyncResult.succeeded()) {
         routingContext.response()
@@ -34,5 +36,13 @@ public final class GetServiceHandler implements Handler<RoutingContext> {
         routingContext.response().setStatusCode(500).end();
       }
     });
+  }
+
+  private JsonObject toJsonObject(Service service) {
+    return new JsonObject()
+        .put("name", service.getName())
+        .put("url", service.getUrl())
+        .put("createdAt", service.getCreatedAt().format(DateTimeFormatter.ISO_DATE_TIME))
+        .put("status", service.getStatus());
   }
 }

@@ -1,4 +1,4 @@
-const listContainer = document.querySelector('#service-list');
+const serviceListContainer = document.querySelector('#service-list');
 let servicesRequest = new Request('/service');
 fetch(servicesRequest)
     .then(function (response) {
@@ -6,9 +6,20 @@ fetch(servicesRequest)
     })
     .then(function (serviceList) {
         serviceList.forEach(service => {
-            var li = document.createElement("li");
-            li.appendChild(document.createTextNode(service.name + ': ' + service.status));
-            listContainer.appendChild(li);
+            let tableRow = document.createElement("tr");
+
+            let serviceNameColumn = document.createElement("td");
+            serviceNameColumn.appendChild(document.createTextNode(service.name));
+
+            let dateCreatedColumn = document.createElement("td");
+            dateCreatedColumn.appendChild(document.createTextNode(new Intl.DateTimeFormat('en-gb', {dateStyle: 'medium', timeStyle: 'medium'})
+                .format(Date.parse(service.createdAt))));
+
+            let statusColumn = document.createElement("td");
+            statusColumn.appendChild(document.createTextNode(service.status));
+
+            tableRow.append(serviceNameColumn, dateCreatedColumn, statusColumn);
+            serviceListContainer.appendChild(tableRow);
         });
     });
 

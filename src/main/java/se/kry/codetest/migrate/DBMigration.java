@@ -9,7 +9,7 @@ public class DBMigration {
     Vertx vertx = Vertx.vertx();
     DBConnector connector = new DBConnector(vertx);
 
-    connector.query("CREATE TABLE IF NOT EXISTS service (name VARCHAR(50) NOT NULL PRIMARY KEY, url VARCHAR(128) NOT NULL, status VARCHAR(15) NOT NULL)")
+    connector.query("CREATE TABLE IF NOT EXISTS service (name VARCHAR(50) NOT NULL PRIMARY KEY, url VARCHAR(128) NOT NULL, created_at DATETIME NOT NULL, status VARCHAR(15) NOT NULL)")
         .setHandler(asyncResult -> {
           if (asyncResult.succeeded()) {
             System.out.println("completed db migrations");

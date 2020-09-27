@@ -15,9 +15,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import se.kry.codetest.persistence.DBConnector;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(VertxExtension.class)
 public class TestMainVerticle {
@@ -31,7 +33,7 @@ public class TestMainVerticle {
   void insert_kry_service(Vertx vertx, VertxTestContext testContext) {
     DBConnector dbConnector = new DBConnector(vertx);
 
-    dbConnector.query("INSERT INTO service VALUES ('kry-service', 'https://www.kry.se', 'UNKNOWN')")
+    dbConnector.query("INSERT INTO service VALUES ('kry-service', 'https://www.kry.se', '2020-09-27T09:30:00', 'UNKNOWN')")
         .setHandler(testContext.completing());
   }
 
@@ -57,6 +59,7 @@ public class TestMainVerticle {
 
           assertEquals("kry-service", firstService.getString("name"));
           assertEquals("https://www.kry.se", firstService.getString("url"));
+          assertEquals(LocalDateTime.parse("2020-09-27T09:30:00"), LocalDateTime.parse(firstService.getString("createdAt")));
           assertEquals("UNKNOWN", firstService.getString("status"));
 
           testContext.completeNow();
@@ -88,6 +91,7 @@ public class TestMainVerticle {
 
                   assertEquals("google-maps", secondService.getString("name"));
                   assertEquals("https://maps.google.com", secondService.getString("url"));
+                  assertNotNull(LocalDateTime.parse(secondService.getString("createdAt")));
                   assertEquals("UNKNOWN", secondService.getString("status"));
 
                   testContext.completeNow();
