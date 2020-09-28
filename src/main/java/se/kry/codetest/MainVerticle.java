@@ -10,6 +10,7 @@ import se.kry.codetest.handler.DeleteServiceHandler;
 import se.kry.codetest.handler.GetServiceHandler;
 import se.kry.codetest.persistence.DBConnector;
 import se.kry.codetest.persistence.ServiceRepository;
+import se.kry.codetest.persistence.DbBackedServiceRepository;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,7 +25,7 @@ public class MainVerticle extends AbstractVerticle {
 
   @Override
   public void start(Future<Void> startFuture) {
-    serviceRepository = new ServiceRepository(new DBConnector(vertx));
+    serviceRepository = new DbBackedServiceRepository(new DBConnector(vertx));
     poller = new BackgroundPoller();
 
     Router router = Router.router(vertx);
