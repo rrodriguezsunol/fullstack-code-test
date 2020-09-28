@@ -1,5 +1,8 @@
 package se.kry.codetest.handler;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -7,6 +10,7 @@ import se.kry.codetest.core.Service;
 import se.kry.codetest.persistence.ServiceRepository;
 
 public final class CreateServiceHandler extends AbstractServiceHandler {
+  private static final String UNKNOWN_STATUS = "UNKNOWN";
 
   public CreateServiceHandler(ServiceRepository serviceRepository) {
     super(serviceRepository, CreateServiceHandler.class);
@@ -17,13 +21,14 @@ public final class CreateServiceHandler extends AbstractServiceHandler {
     JsonObject jsonBody = routingContext.getBodyAsJson();
 
     Future<Service> serviceFuture = serviceRepository.save(
-        new Service(jsonBody.getString("name"), jsonBody.getString("url"), "UNKNOWN"));
+        new Service(jsonBody.getString(NAME_ATTRIBUTE_KEY), jsonBody.getString(URL_ATTRIBUTE_KEY), UNKNOWN_STATUS));
 
     serviceFuture.setHandler(asyncResult -> {
       if (asyncResult.succeeded()) {
         routingContext.response()
-            .putHeader("content-type", "text/plain")
-            .end("OK");
+            .setStatusCode(HttpResponseStatus.CREATED.code())
+            .putHeader(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
+            .end(toJsonObject(asyncResult.result()).encode());
       } else {
         logErrorAndSendInternalErrorResponse(routingContext, asyncResult);
       }

@@ -1,5 +1,6 @@
 package se.kry.codetest;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
@@ -73,7 +74,9 @@ public class TestMainVerticle {
   @Test
   @DisplayName("Save a new service")
   void save_new_service(Vertx vertx, VertxTestContext testContext) {
-    JsonObject newServiceJsonObject = new JsonObject().put("name", "google-maps").put("url", "https://maps.google.com");
+    String googleMapsServiceName = "google-maps";
+    String googleMapsUrl = "https://maps.google.com";
+    JsonObject newServiceJsonObject = new JsonObject().put("name", googleMapsServiceName).put("url", googleMapsUrl);
 
     WebClient webClient = WebClient.create(vertx);
 
@@ -81,7 +84,16 @@ public class TestMainVerticle {
         .post(8080, "::1", "/service")
         .sendJsonObject(newServiceJsonObject, asyncResultForPost -> {
           testContext.verify(() -> {
-            assertEquals(HttpResponseStatus.OK.code(), asyncResultForPost.result().statusCode());
+            assertEquals(HttpResponseStatus.CREATED.code(), asyncResultForPost.result().statusCode());
+
+            assertEquals("application/json", asyncResultForPost.result().getHeader(HttpHeaderNames.CONTENT_TYPE.toString()));
+
+            JsonObject responseJson = asyncResultForPost.result().bodyAsJsonObject();
+            assertEquals(googleMapsServiceName, responseJson.getString("name"));
+            assertEquals(googleMapsUrl, responseJson.getString("url"));
+            assertNotNull(LocalDateTime.parse(responseJson.getString("createdAt")));
+            assertEquals("UNKNOWN", responseJson.getString("status"));
+
 
             webClient
                 .get(8080, "::1", "/service")
@@ -93,8 +105,8 @@ public class TestMainVerticle {
 
                   JsonObject secondService = body.getJsonObject(1);
 
-                  assertEquals("google-maps", secondService.getString("name"));
-                  assertEquals("https://maps.google.com", secondService.getString("url"));
+                  assertEquals(googleMapsServiceName, secondService.getString("name"));
+                  assertEquals(googleMapsUrl, secondService.getString("url"));
                   assertNotNull(LocalDateTime.parse(secondService.getString("createdAt")));
                   assertEquals("UNKNOWN", secondService.getString("status"));
 
