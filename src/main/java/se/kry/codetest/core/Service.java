@@ -4,13 +4,15 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 public final class Service {
+  private static final String UNKNOWN_STATUS = "UNKNOWN";
+
   private String name;
   private String url;
   private String status;
   private LocalDateTime createdAt;
 
-  public Service(String name, String url, String status) {
-    this(name, url, status, LocalDateTime.now());
+  public Service(String name, String url) {
+    this(name, url, UNKNOWN_STATUS, LocalDateTime.now());
   }
 
   public Service(String name, String url, String status, LocalDateTime createdAt) {
@@ -30,6 +32,10 @@ public final class Service {
 
   public String getStatus() {
     return status;
+  }
+
+  public void setStatus(String status) {
+    this.status = status;
   }
 
   public LocalDateTime getCreatedAt() {

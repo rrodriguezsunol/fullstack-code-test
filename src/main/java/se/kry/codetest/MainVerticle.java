@@ -3,14 +3,18 @@ package se.kry.codetest;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
+import se.kry.codetest.core.ServiceHealthChecker;
 import se.kry.codetest.handler.CreateServiceHandler;
 import se.kry.codetest.handler.DeleteServiceHandler;
 import se.kry.codetest.handler.GetServiceHandler;
 import se.kry.codetest.persistence.DBConnector;
-import se.kry.codetest.persistence.ServiceRepository;
 import se.kry.codetest.persistence.DbBackedServiceRepository;
+import se.kry.codetest.persistence.ServiceRepository;
+import se.kry.codetest.poller.WebPoller;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,20 +24,17 @@ public class MainVerticle extends AbstractVerticle {
 
   private ServiceRepository serviceRepository;
 
-  private BackgroundPoller poller;
-
-
   @Override
   public void start(Future<Void> startFuture) {
     serviceRepository = new DbBackedServiceRepository(new DBConnector(vertx));
-    poller = new BackgroundPoller();
+
+    ServiceHealthChecker serviceHealthChecker = new ServiceHealthChecker(
+        new WebPoller(WebClient.create(vertx, new WebClientOptions().setConnectTimeout(5_000))), serviceRepository);
 
     Router router = Router.router(vertx);
     router.route().handler(BodyHandler.create());
 
-    vertx.setPeriodic(
-        1000 * 60,
-        timerId -> serviceRepository.findAll().setHandler(asyncResult -> poller.pollServices(asyncResult.result())));
+    vertx.setPeriodic(10_000, timerId -> serviceHealthChecker.checkAll());
 
     setRoutes(router);
 

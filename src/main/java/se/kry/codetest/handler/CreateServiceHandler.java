@@ -10,7 +10,6 @@ import se.kry.codetest.core.Service;
 import se.kry.codetest.persistence.ServiceRepository;
 
 public final class CreateServiceHandler extends AbstractServiceHandler {
-  private static final String UNKNOWN_STATUS = "UNKNOWN";
 
   public CreateServiceHandler(ServiceRepository serviceRepository) {
     super(serviceRepository, CreateServiceHandler.class);
@@ -21,7 +20,7 @@ public final class CreateServiceHandler extends AbstractServiceHandler {
     JsonObject jsonBody = routingContext.getBodyAsJson();
 
     Future<Service> serviceFuture = serviceRepository.save(
-        new Service(jsonBody.getString(NAME_ATTRIBUTE_KEY), jsonBody.getString(URL_ATTRIBUTE_KEY), UNKNOWN_STATUS));
+        new Service(jsonBody.getString(NAME_ATTRIBUTE_KEY), jsonBody.getString(URL_ATTRIBUTE_KEY)));
 
     serviceFuture.setHandler(asyncResult -> {
       if (asyncResult.succeeded()) {

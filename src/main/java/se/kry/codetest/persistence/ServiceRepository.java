@@ -12,4 +12,6 @@ public interface ServiceRepository {
   Future<Service> save(Service newService);
 
   Future<Void> delete(String serviceName);
+
+  Future<Void> update(Service service);
 }
