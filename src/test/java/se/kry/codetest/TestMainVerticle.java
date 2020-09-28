@@ -8,10 +8,7 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import se.kry.codetest.persistence.DBConnector;
 
@@ -23,6 +20,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(VertxExtension.class)
 public class TestMainVerticle {
+
+  @BeforeAll
+  static void clear_services_table(Vertx vertx, VertxTestContext testContext) {
+    DBConnector dbConnector = new DBConnector(vertx);
+
+    dbConnector.query("DELETE FROM service").setHandler(testContext.completing());
+  }
 
   @BeforeEach
   void deploy_verticle(Vertx vertx, VertxTestContext testContext) {
@@ -68,22 +72,22 @@ public class TestMainVerticle {
 
   @Test
   @DisplayName("Save a new service")
-  void save_service_entry(Vertx vertx, VertxTestContext testContext) {
+  void save_new_service(Vertx vertx, VertxTestContext testContext) {
     JsonObject newServiceJsonObject = new JsonObject().put("name", "google-maps").put("url", "https://maps.google.com");
 
     WebClient webClient = WebClient.create(vertx);
 
     webClient
         .post(8080, "::1", "/service")
-        .sendJsonObject(newServiceJsonObject, asyncResult -> {
+        .sendJsonObject(newServiceJsonObject, asyncResultForPost -> {
           testContext.verify(() -> {
-            assertEquals(HttpResponseStatus.OK.code(), asyncResult.result().statusCode());
+            assertEquals(HttpResponseStatus.OK.code(), asyncResultForPost.result().statusCode());
 
             webClient
                 .get(8080, "::1", "/service")
-                .send(response -> testContext.verify(() -> {
-                  assertEquals(HttpResponseStatus.OK.code(), response.result().statusCode());
-                  JsonArray body = response.result().bodyAsJsonArray();
+                .send(asyncResultForGet -> testContext.verify(() -> {
+                  assertEquals(HttpResponseStatus.OK.code(), asyncResultForGet.result().statusCode());
+                  JsonArray body = asyncResultForGet.result().bodyAsJsonArray();
 
                   assertEquals(2, body.size());
 
@@ -98,5 +102,26 @@ public class TestMainVerticle {
                 }));
           });
         });
+  }
+
+  @Test
+  @DisplayName("Delete an existing service")
+  void delete_existing_service(Vertx vertx, VertxTestContext testContext) {
+    WebClient webClient = WebClient.create(vertx);
+
+    webClient.delete(8080, "::1", "/service/kry-service")
+        .send(asyncResultForDelete -> testContext.verify(() -> {
+          assertEquals(HttpResponseStatus.NO_CONTENT.code(), asyncResultForDelete.result().statusCode());
+
+          webClient
+              .get(8080, "::1", "/service")
+              .send(asyncResultForGet -> testContext.verify(() -> {
+                JsonArray body = asyncResultForGet.result().bodyAsJsonArray();
+
+                assertEquals(0, body.size());
+
+                testContext.completeNow();
+              }));
+        }));
   }
 }

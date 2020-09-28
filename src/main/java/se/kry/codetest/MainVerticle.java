@@ -6,6 +6,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import se.kry.codetest.handler.CreateServiceHandler;
+import se.kry.codetest.handler.DeleteServiceHandler;
 import se.kry.codetest.handler.GetServiceHandler;
 import se.kry.codetest.persistence.DBConnector;
 import se.kry.codetest.persistence.ServiceRepository;
@@ -58,6 +59,8 @@ public class MainVerticle extends AbstractVerticle {
       LOGGER.log(Level.SEVERE, "Unexpected internal error:", routingContext.failure());
       routingContext.response().setStatusCode(500).end();
     });
+
+    router.delete("/service/:serviceName").handler(new DeleteServiceHandler(serviceRepository));
   }
 
 }

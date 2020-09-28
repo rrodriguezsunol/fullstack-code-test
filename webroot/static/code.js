@@ -18,7 +18,19 @@ fetch(servicesRequest)
             let statusColumn = document.createElement("td");
             statusColumn.appendChild(document.createTextNode(service.status));
 
-            tableRow.append(serviceNameColumn, dateCreatedColumn, statusColumn);
+            let deleteButton = document.createElement("button");
+            deleteButton.appendChild(document.createTextNode("Delete"));
+            deleteButton.setAttribute("id", `delete-service-${service.name}`);
+            deleteButton.onclick = evt => {
+                fetch(`/service/${service.name}`, {
+                    method: 'delete',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                }).then(res => location.reload());
+            };
+
+            tableRow.append(serviceNameColumn, dateCreatedColumn, statusColumn, deleteButton);
             serviceListContainer.appendChild(tableRow);
         });
     });

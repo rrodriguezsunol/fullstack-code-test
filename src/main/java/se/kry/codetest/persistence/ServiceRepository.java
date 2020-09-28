@@ -36,12 +36,16 @@ public final class ServiceRepository {
 
   public Future<Service> save(Service newService) {
     return connector.query(
-        "INSERT INTO SERVICE VALUES (?, ?, ?, ?)",
+        "INSERT INTO service VALUES (?, ?, ?, ?)",
         new JsonArray()
             .add(newService.getName())
             .add(newService.getUrl())
             .add(newService.getCreatedAt().format(ISO_DATE_TIME))
             .add(newService.getStatus()))
         .map(newService);
+  }
+
+  public Future<Void> delete(String serviceName) {
+    return connector.query("DELETE FROM service WHERE name = ?", new JsonArray().add(serviceName)).mapEmpty();
   }
 }
